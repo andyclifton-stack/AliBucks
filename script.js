@@ -265,7 +265,7 @@ function generateOrderText() {
 sendOrderWhatsappBtn.addEventListener('click', () => {
     const orderText = generateOrderText();
     const encodedText = encodeURIComponent(orderText);
-    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
     window.open(whatsappUrl, '_blank');
 });
 
@@ -336,7 +336,7 @@ sendReviewWhatsappBtn.addEventListener('click', () => {
     if (!message) return;
 
     const encodedText = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
     window.open(whatsappUrl, '_blank');
 });
 
@@ -369,7 +369,7 @@ shareBtn.addEventListener('click', () => {
     // Determine the current URL to share. Fallback to just text if hosted weirdly, but usually window.location.href works great.
     const urlToShare = window.location.href.split('index.html')[0]; // Clean up the URL if it has index.html
     const shareText = `\u{1F338} Check out my cool new cafe: Ali Bucks! \u{1F338}\n\nOrder treats online here: ${urlToShare}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
     window.open(whatsappUrl, '_blank');
 });
 

@@ -456,18 +456,48 @@ h2::after {
     font-family: 'Outfit', sans-serif;
 }
 
-.share-buttons-container {
+.share-buttons-vertical {
     display: flex;
-    flex-direction: row;
-    gap: 10px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
 }
 
-.share-buttons-container .whatsapp-btn,
-.share-buttons-container .native-share-btn {
-    flex: 1;
+.share-divider {
+    font-size: 0.95rem;
+    color: #888;
+    position: relative;
+    width: 100%;
+    text-align: center;
+    margin: 4px 0;
+    font-weight: 500;
+}
+
+.share-divider::before,
+.share-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 15%;
+    height: 1px;
+    background: #d8cec0;
+}
+
+.share-divider::before {
+    left: 10%;
+}
+
+.share-divider::after {
+    right: 10%;
+}
+
+.share-buttons-vertical .whatsapp-btn,
+.share-buttons-vertical .native-share-btn {
     margin-top: 0;
-    padding: 1rem;
-    font-size: 1rem;
+    padding: 1.2rem;
+    font-size: 1.1rem;
+    width: 100%;
 }
 
 .native-share-btn {
@@ -606,10 +636,6 @@ footer {
     .native-share-btn {
         font-size: 0.95rem;
         padding: 0.8rem;
-    }
-
-    .share-buttons-container {
-        flex-direction: column;
     }
 }
 
