@@ -1,32 +1,53 @@
-const menuItems = {
-    drinks: [
-        { id: 'd1', name: 'Biscoff Milkshake', icon: '🥛' },
-        { id: 'd2', name: 'Vanilla Milkshake', icon: '🥤' },
-        { id: 'd3', name: 'Squash (Blackcurrant)', icon: '🧃' },
-        { id: 'd4', name: 'Pink Drink', icon: '🌸' }
-    ],
-    popsicles: [
-        { id: 'p1', name: 'Blackcurrant Popsicle', icon: '🍇' },
-        { id: 'p2', name: 'Strawberry Popsicle', icon: '🍓' },
-        { id: 'p3', name: 'Milky Popsicle', icon: '🍦' }
-    ],
-    cakepops: [
-        { id: 'c1', name: 'Sprinkles Cake Pop', icon: '🍭' },
-        { id: 'c2', name: 'Pink Cake Pop', icon: '🎀' },
-        { id: 'c3', name: 'White Cake Pop', icon: '☁️' }
-    ],
-    snacks: [
-        { id: 's1', name: 'Gold Bar', icon: '🍫' },
-        { id: 's2', name: 'Carmals Wafer', icon: '🧇' },
-        { id: 's3', name: 'Rice Krispie Treat Bar', icon: '✨' },
-        { id: 's4', name: 'Crisps', icon: '🥔' }
-    ]
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyDjEu71FYxr8Ebqhd3fySP-4qxuWNxSC6Q",
+    authDomain: "finger-of-shame.firebaseapp.com",
+    projectId: "finger-of-shame",
+    storageBucket: "finger-of-shame.firebasestorage.app",
+    messagingSenderId: "940288270460",
+    appId: "1:940288270460:web:fb2681477c29523b7269f9",
+    measurementId: "G-0QT07HKZ8M",
+    databaseURL: "https://finger-of-shame-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const menuRef = db.ref('alibucks/menu');
+
+// Default menu (used for seeding if empty)
+const defaultMenuItems = {
+    drinks: {
+        d1: { name: 'Biscoff Milkshake', icon: '🥛', category: 'drinks' },
+        d2: { name: 'Vanilla Milkshake', icon: '🥤', category: 'drinks' },
+        d3: { name: 'Squash (Blackcurrant)', icon: '🧃', category: 'drinks' },
+        d4: { name: 'Pink Drink', icon: '🌸', category: 'drinks' }
+    },
+    popsicles: {
+        p1: { name: 'Blackcurrant Popsicle', icon: '🍇', category: 'popsicles' },
+        p2: { name: 'Strawberry Popsicle', icon: '🍓', category: 'popsicles' },
+        p3: { name: 'Milky Popsicle', icon: '🍦', category: 'popsicles' }
+    },
+    cakepops: {
+        c1: { name: 'Sprinkles Cake Pop', icon: '🍭', category: 'cakepops' },
+        c2: { name: 'Pink Cake Pop', icon: '🎀', category: 'cakepops' },
+        c3: { name: 'White Cake Pop', icon: '☁️', category: 'cakepops' }
+    },
+    snacks: {
+        s1: { name: 'Gold Bar', icon: '🍫', category: 'snacks' },
+        s2: { name: 'Carmals Wafer', icon: '🧇', category: 'snacks' },
+        s3: { name: 'Rice Krispie Treat Bar', icon: '✨', category: 'snacks' },
+        s4: { name: 'Crisps', icon: '🥔', category: 'snacks' }
+    }
 };
 
 // State
+let menuItems = {};
 let cart = {};
 let currentRating = 0;
-const phoneNumber = ""; // Let the user type the group or select the contact in WhatsApp explicitly, so we just use wa.me/?text=
+let isAdmin = false;
 
 // DOM Elements
 const menuGrid = document.getElementById('menu-grid');
@@ -38,9 +59,59 @@ const stars = document.querySelectorAll('#star-rating span');
 const reviewText = document.getElementById('review-text');
 const sendReviewBtn = document.getElementById('send-review-btn');
 
-// Initialize Menu
+// Admin DOM
+const adminBtn = document.getElementById('admin-login-btn');
+const adminModal = document.getElementById('admin-modal');
+const closeAdminBtn = document.getElementById('close-admin-modal');
+const adminPassword = document.getElementById('admin-password');
+const submitPasswordBtn = document.getElementById('submit-password-btn');
+const adminLoginSection = document.getElementById('admin-login-section');
+const adminDashboardSection = document.getElementById('admin-dashboard-section');
+const addItemBtn = document.getElementById('add-item-btn');
+const adminMessage = document.getElementById('admin-message');
+
+// Fetch Menu from Firebase
+menuRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+        // Seed if empty
+        menuRef.set(defaultMenuItems);
+    } else {
+        menuItems = data;
+        renderMenu();
+        // Clean up cart for items that don't exist anymore
+        cleanCart();
+    }
+});
+
+function cleanCart() {
+    let changed = false;
+    for (const [id, item] of Object.entries(cart)) {
+        // Check if item still exists in menu
+        let exists = false;
+        for (const cat of Object.values(menuItems)) {
+            if (cat[id]) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            delete cart[id];
+            changed = true;
+        }
+    }
+    if (changed) updateCartUI();
+}
+
+// Render Menu
 function renderMenu() {
-    for (const [category, items] of Object.entries(menuItems)) {
+    menuGrid.innerHTML = '';
+    const categories = ['drinks', 'popsicles', 'cakepops', 'snacks'];
+
+    for (const category of categories) {
+        if (!menuItems[category]) continue; // Skip empty categories
+
+        const items = menuItems[category];
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'menu-category';
 
@@ -58,19 +129,64 @@ function renderMenu() {
         const itemsGrid = document.createElement('div');
         itemsGrid.className = 'category-items';
 
-        items.forEach(item => {
+        for (const [id, item] of Object.entries(items)) {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'menu-item';
             itemDiv.innerHTML = `
                 <span class="item-icon">${item.icon}</span>
                 <div class="item-name">${item.name}</div>
-                <button class="add-btn" onclick="addToCart('${item.id}', '${item.name}')">Add to Order</button>
+                <button class="add-btn" onclick="addToCart('${id}', '${item.name}')">Add to Order</button>
             `;
             itemsGrid.appendChild(itemDiv);
-        });
+        }
 
         categoryDiv.appendChild(itemsGrid);
         menuGrid.appendChild(categoryDiv);
+    }
+
+    // Also render the admin list
+    renderAdminMenu();
+}
+
+function renderAdminMenu() {
+    const adminMenuList = document.getElementById('admin-menu-list');
+    if (!adminMenuList) return;
+    adminMenuList.innerHTML = '';
+
+    const categories = ['drinks', 'popsicles', 'cakepops', 'snacks'];
+    for (const category of categories) {
+        if (!menuItems[category] || Object.keys(menuItems[category]).length === 0) continue;
+
+        const catDiv = document.createElement('div');
+        catDiv.className = 'admin-menu-category';
+
+        let icon = '✨';
+        if (category === 'drinks') icon = '🥤';
+        if (category === 'popsicles') icon = '🍦';
+        if (category === 'cakepops') icon = '🍭';
+        if (category === 'snacks') icon = '🍪';
+
+        catDiv.innerHTML = `<div class="admin-menu-category-title">${icon} ${category.replace('cakepops', 'Cake Pops')}</div>`;
+
+        for (const [id, item] of Object.entries(menuItems[category])) {
+            const row = document.createElement('div');
+            row.className = 'admin-menu-row';
+
+            const itemSpan = document.createElement('span');
+            itemSpan.textContent = `${item.icon} ${item.name}`;
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn-small';
+            delBtn.title = 'Delete';
+            delBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+            delBtn.onclick = () => deleteMenuItem(category, id);
+
+            row.appendChild(itemSpan);
+            row.appendChild(delBtn);
+
+            catDiv.appendChild(row);
+        }
+        adminMenuList.appendChild(catDiv);
     }
 }
 
@@ -99,10 +215,12 @@ function updateCartUI() {
     let totalItems = 0;
     const cartKeys = Object.keys(cart);
 
+    const cartCountElem = document.getElementById('cart-count');
+
     if (cartKeys.length === 0) {
-        cartItemsContainer.innerHTML = '<p class="empty-cart-msg">Your cart is empty. Add some yummy treats!</p>';
+        cartItemsContainer.innerHTML = '<p class="empty-cart-msg">Your receipt is empty... for now!</p>';
         cartSummary.classList.add('hide');
-        cartCountElem.textContent = '0';
+        if (cartCountElem) cartCountElem.textContent = '0';
         return;
     }
 
@@ -125,7 +243,7 @@ function updateCartUI() {
         cartItemsContainer.appendChild(cartItemDiv);
     });
 
-    cartCountElem.textContent = totalItems;
+    if (cartCountElem) cartCountElem.textContent = totalItems + ' items';
 }
 
 // Order Generation
@@ -187,5 +305,66 @@ sendReviewBtn.addEventListener('click', () => {
     window.open(whatsappUrl, '_blank');
 });
 
-// Init
-renderMenu();
+// Admin Functionality
+adminBtn.addEventListener('click', () => {
+    adminModal.classList.remove('hide');
+    if (isAdmin) {
+        adminLoginSection.classList.add('hide');
+        adminDashboardSection.classList.remove('hide');
+    } else {
+        adminLoginSection.classList.remove('hide');
+        adminDashboardSection.classList.add('hide');
+        adminPassword.value = '';
+        adminMessage.innerText = '';
+    }
+});
+
+closeAdminBtn.addEventListener('click', () => {
+    adminModal.classList.add('hide');
+});
+
+submitPasswordBtn.addEventListener('click', () => {
+    if (adminPassword.value === '1234') {
+        isAdmin = true;
+        document.body.classList.add('admin-mode');
+        adminLoginSection.classList.add('hide');
+        adminDashboardSection.classList.remove('hide');
+        adminMessage.innerText = '';
+    } else {
+        alert('Incorrect password!');
+    }
+});
+
+addItemBtn.addEventListener('click', () => {
+    const category = document.getElementById('new-item-category').value;
+    const name = document.getElementById('new-item-name').value.trim();
+    const icon = document.getElementById('new-item-icon').value.trim();
+
+    if (!name || !icon) {
+        adminMessage.innerText = 'Please provide both name and icon.';
+        return;
+    }
+
+    const newId = 'item_' + Date.now();
+    const newItem = {
+        name: name,
+        icon: icon,
+        category: category
+    };
+
+    menuRef.child(category).child(newId).set(newItem).then(() => {
+        adminMessage.innerText = 'Item added successfully!';
+        document.getElementById('new-item-name').value = '';
+        document.getElementById('new-item-icon').value = '';
+        setTimeout(() => { adminMessage.innerText = ''; }, 3000);
+    }).catch(err => {
+        adminMessage.innerText = 'Error adding item.';
+        console.error(err);
+    });
+});
+
+window.deleteMenuItem = function (category, id) {
+    if (confirm('Are you sure you want to delete this menu item?')) {
+        menuRef.child(category).child(id).remove().catch(err => console.error(err));
+    }
+};
