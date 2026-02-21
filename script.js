@@ -265,7 +265,11 @@ function generateOrderText() {
 sendOrderWhatsappBtn.addEventListener('click', () => {
     const orderText = generateOrderText();
     const encodedText = encodeURIComponent(orderText);
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const baseUrl = isMobile ? 'https://api.whatsapp.com/send' : 'https://web.whatsapp.com/send';
+    const whatsappUrl = `${baseUrl}?text=${encodedText}`;
+
     window.open(whatsappUrl, '_blank');
 });
 
@@ -336,7 +340,11 @@ sendReviewWhatsappBtn.addEventListener('click', () => {
     if (!message) return;
 
     const encodedText = encodeURIComponent(message);
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const baseUrl = isMobile ? 'https://api.whatsapp.com/send' : 'https://web.whatsapp.com/send';
+    const whatsappUrl = `${baseUrl}?text=${encodedText}`;
+
     window.open(whatsappUrl, '_blank');
 });
 
@@ -369,7 +377,12 @@ shareBtn.addEventListener('click', () => {
     // Determine the current URL to share. Fallback to just text if hosted weirdly, but usually window.location.href works great.
     const urlToShare = window.location.href.split('index.html')[0]; // Clean up the URL if it has index.html
     const shareText = `\u{1F338} Check out my cool new cafe: Ali Bucks! \u{1F338}\n\nOrder treats online here: ${urlToShare}`;
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+    const encodedText = encodeURIComponent(shareText);
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const baseUrl = isMobile ? 'https://api.whatsapp.com/send' : 'https://web.whatsapp.com/send';
+    const whatsappUrl = `${baseUrl}?text=${encodedText}`;
+
     window.open(whatsappUrl, '_blank');
 });
 
