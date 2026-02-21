@@ -55,10 +55,12 @@ const menuGrid = document.getElementById('menu-grid');
 const cartItemsContainer = document.getElementById('cart-items');
 const cartCountElem = document.getElementById('cart-count');
 const cartSummary = document.getElementById('cart-summary');
-const sendOrderBtn = document.getElementById('send-order-btn');
+const sendOrderWhatsappBtn = document.getElementById('send-order-whatsapp-btn');
+const sendOrderShareBtn = document.getElementById('send-order-share-btn');
 const stars = document.querySelectorAll('#star-rating span');
 const reviewText = document.getElementById('review-text');
-const sendReviewBtn = document.getElementById('send-review-btn');
+const sendReviewWhatsappBtn = document.getElementById('send-review-whatsapp-btn');
+const sendReviewShareBtn = document.getElementById('send-review-share-btn');
 
 // Admin DOM
 const adminBtn = document.getElementById('admin-login-btn');
@@ -249,19 +251,45 @@ function updateCartUI() {
 }
 
 // Order Generation
-sendOrderBtn.addEventListener('click', () => {
-    let orderText = "🌸 *NEW ORDER FOR ALI BUCKS!* 🌸\n\n";
+function generateOrderText() {
+    let orderText = "\u{1F338} *NEW ORDER FOR ALI BUCKS!* \u{1F338}\n\n";
 
     Object.values(cart).forEach(item => {
-        orderText += `👉 ${item.qty}x ${item.name}\n`;
+        orderText += `\u{1F449} ${item.qty}x ${item.name}\n`;
     });
 
-    orderText += "\n✨ _Can't wait for my yummy treats!_ ✨";
+    orderText += "\n\u{2728} _Can't wait for my yummy treats!_ \u{2728}";
+    return orderText;
+}
 
+sendOrderWhatsappBtn.addEventListener('click', () => {
+    const orderText = generateOrderText();
     const encodedText = encodeURIComponent(orderText);
     const whatsappUrl = `https://wa.me/?text=${encodedText}`;
-
     window.open(whatsappUrl, '_blank');
+});
+
+sendOrderShareBtn.addEventListener('click', async () => {
+    const orderText = generateOrderText();
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Order from Ali Bucks',
+                text: orderText
+            });
+        } catch (err) {
+            console.log('Error sharing:', err);
+        }
+    } else {
+        navigator.clipboard.writeText(orderText).then(() => {
+            const originalText = sendOrderShareBtn.innerHTML;
+            sendOrderShareBtn.innerHTML = '✅ Copied!';
+            setTimeout(() => {
+                sendOrderShareBtn.innerHTML = originalText;
+            }, 2000);
+        });
+    }
 });
 
 // Review Functionality
@@ -283,35 +311,64 @@ function updateStars() {
     });
 }
 
-sendReviewBtn.addEventListener('click', () => {
+function generateReviewText() {
     if (currentRating === 0) {
-        alert("Please select a star rating first! ⭐");
-        return;
+        alert("Please select a star rating first! \u{2B50}");
+        return null;
     }
 
     const reviewStr = reviewText.value.trim();
-    let starStr = '⭐'.repeat(currentRating);
+    let starStr = '\u{2B50}'.repeat(currentRating);
 
-    let message = `🌟 *NEW REVIEW FOR ALI BUCKS!* 🌟\n\n`;
+    let message = `\u{1F31F} *NEW REVIEW FOR ALI BUCKS!* \u{1F31F}\n\n`;
     message += `Rating: ${starStr}\n`;
 
     if (reviewStr) {
         message += `Review: "${reviewStr}"\n`;
     }
 
-    message += `\n💖 _Best cafe ever!_ 💖`;
+    message += `\n\u{1F496} _Best cafe ever!_ \u{1F496}`;
+    return message;
+}
+
+sendReviewWhatsappBtn.addEventListener('click', () => {
+    const message = generateReviewText();
+    if (!message) return;
 
     const encodedText = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/?text=${encodedText}`;
-
     window.open(whatsappUrl, '_blank');
+});
+
+sendReviewShareBtn.addEventListener('click', async () => {
+    const message = generateReviewText();
+    if (!message) return;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Review for Ali Bucks',
+                text: message
+            });
+        } catch (err) {
+            console.log('Error sharing:', err);
+        }
+    } else {
+        navigator.clipboard.writeText(message).then(() => {
+            const originalText = sendReviewShareBtn.innerHTML;
+            sendReviewShareBtn.innerHTML = '✅ Copied!';
+            setTimeout(() => {
+                sendReviewShareBtn.innerHTML = originalText;
+            }, 2000);
+        });
+    }
 });
 
 // Share Functionality
 shareBtn.addEventListener('click', () => {
     // Determine the current URL to share. Fallback to just text if hosted weirdly, but usually window.location.href works great.
     const urlToShare = window.location.href.split('index.html')[0]; // Clean up the URL if it has index.html
-    const shareText = `🌸 Check out my cool new cafe: Ali Bucks! 🌸\n\nOrder treats online here: ${urlToShare}`;
+    const shareText = `\u{1F338} Check out my cool new cafe: Ali Bucks! \u{1F338}\n\nOrder treats online here: ${urlToShare}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     window.open(whatsappUrl, '_blank');
 });
