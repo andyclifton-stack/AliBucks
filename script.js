@@ -70,6 +70,7 @@ const adminLoginSection = document.getElementById('admin-login-section');
 const adminDashboardSection = document.getElementById('admin-dashboard-section');
 const addItemBtn = document.getElementById('add-item-btn');
 const adminMessage = document.getElementById('admin-message');
+const shareBtn = document.getElementById('share-btn');
 
 // Fetch Menu from Firebase
 menuRef.on('value', (snapshot) => {
@@ -303,6 +304,15 @@ sendReviewBtn.addEventListener('click', () => {
     const encodedText = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/?text=${encodedText}`;
 
+    window.open(whatsappUrl, '_blank');
+});
+
+// Share Functionality
+shareBtn.addEventListener('click', () => {
+    // Determine the current URL to share. Fallback to just text if hosted weirdly, but usually window.location.href works great.
+    const urlToShare = window.location.href.split('index.html')[0]; // Clean up the URL if it has index.html
+    const shareText = `🌸 Check out my cool new cafe: Ali Bucks! 🌸\n\nOrder treats online here: ${urlToShare}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     window.open(whatsappUrl, '_blank');
 });
 
