@@ -449,12 +449,7 @@ h2::after {
     fill: currentColor;
 }
 
-.whatsapp-btn.secondary {
-    background: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
-    color: #fff;
-    font-family: 'Outfit', sans-serif;
-}
+
 
 .share-buttons-vertical {
     display: flex;
@@ -465,77 +460,61 @@ h2::after {
 }
 
 .share-divider {
-    font-size: 0.95rem;
-    color: #888;
+    font-size: 0.9rem;
+    color: #999;
     position: relative;
     width: 100%;
     text-align: center;
-    margin: 4px 0;
+    margin: 2px 0;
     font-weight: 500;
+    font-style: italic;
 }
 
-.share-divider::before,
-.share-divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 15%;
-    height: 1px;
-    background: #d8cec0;
-}
-
-.share-divider::before {
-    left: 10%;
-}
-
-.share-divider::after {
-    right: 10%;
-}
-
-.share-buttons-vertical .whatsapp-btn,
-.share-buttons-vertical .native-share-btn {
+.share-buttons-vertical .whatsapp-btn {
     margin-top: 0;
     padding: 1.2rem;
     font-size: 1.1rem;
     width: 100%;
 }
 
+.share-buttons-vertical .native-share-btn {
+    margin-top: 0;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+    width: auto;
+    min-width: 60%;
+}
+
 .native-share-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.8rem;
-    background: #4A90E2;
-    color: white;
-    border: none;
+    gap: 0.5rem;
+    background: transparent;
+    color: #888;
+    border: 2px solid #ddd;
     border-radius: 50px;
-    font-weight: 800;
+    font-weight: 600;
     font-family: 'Outfit', sans-serif;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
 }
 
 .native-share-btn:hover {
-    background: #357ABD;
+    background: #f5f5f5;
+    color: #555;
+    border-color: #bbb;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
-}
-
-.native-share-btn.secondary {
-    background: #b28dff;
-    /* Pleasant pastel purple */
-    box-shadow: 0 4px 15px rgba(178, 141, 255, 0.4);
 }
 
 .native-share-btn.secondary:hover {
-    background: #9d70ff;
-    box-shadow: 0 6px 20px rgba(178, 141, 255, 0.5);
+    background: #f5f5f5;
+    border-color: #bbb;
 }
 
 .whatsapp-btn.secondary:hover {
-    background: var(--primary-dark);
-    box-shadow: 0 6px 20px rgba(255, 182, 193, 0.5);
+    /* Inherits normal whatsapp hover */
+    background: #128C7E;
 }
 
 
