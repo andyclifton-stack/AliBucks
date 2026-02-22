@@ -31,6 +31,7 @@ body {
     background-attachment: fixed;
     opacity: 0.95;
     padding-bottom: 40px;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -191,6 +192,7 @@ h2::after {
     flex-direction: row;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .menu-item:hover {
@@ -622,11 +624,24 @@ footer {
 .footer-btn {
     background: none;
     border: none;
-    color: var(--secondary-color);
+    color: var(--primary-dark);
+    font-weight: 700;
     cursor: pointer;
     font-size: 0.9rem;
     text-decoration: underline;
     margin-left: 10px;
+}
+
+.cart-category-header {
+    font-size: 0.9rem;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 3px;
+    letter-spacing: 1px;
 }
 
 .modal {
@@ -657,6 +672,28 @@ footer {
     max-height: 85vh;
     display: flex;
     flex-direction: column;
+}
+
+#admin-login-section {
+    text-align: center;
+}
+
+#admin-login-section input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ffe4ed;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    background-color: #fffafb;
+    transition: border-color 0.2s;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+#admin-login-section input:focus {
+    outline: none;
+    border-color: var(--primary-color);
 }
 
 #admin-login-section,

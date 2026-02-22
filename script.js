@@ -139,7 +139,7 @@ function renderMenu() {
             itemDiv.innerHTML = `
                 <span class="item-icon">${item.icon}</span>
                 <div class="item-name">${item.name}</div>
-                <button class="add-btn" onclick="addToCart('${id}', '${item.name}')">Add to Order</button>
+                <button class="add-btn" onclick="addToCart('${id}', '${item.name.replace(/'/g, "\\'")}', '${category}')">Add to Order</button>
             `;
             itemsGrid.appendChild(itemDiv);
         }
@@ -195,11 +195,20 @@ function renderAdminMenu() {
 }
 
 // Cart functionality
-window.addToCart = function (id, name) {
+window.addToCart = function (id, name, category) {
     if (cart[id]) {
         cart[id].qty += 1;
     } else {
-        cart[id] = { name: name, qty: 1 };
+        // Find category if not provided
+        if (!category) {
+            for (const cat of Object.keys(menuItems)) {
+                if (menuItems[cat] && menuItems[cat][id]) {
+                    category = cat;
+                    break;
+                }
+            }
+        }
+        cart[id] = { name: name, qty: 1, category: category || 'other' };
     }
     updateCartUI();
 };
@@ -230,22 +239,36 @@ function updateCartUI() {
 
     cartSummary.classList.remove('hide');
 
+    // Group by category
+    const groupedCart = {};
     cartKeys.forEach(id => {
         const item = cart[id];
         totalItems += item.qty;
-
-        const cartItemDiv = document.createElement('div');
-        cartItemDiv.className = 'cart-item';
-        cartItemDiv.innerHTML = `
-            <div class="cart-item-info">${item.name}</div>
-            <div class="cart-item-controls">
-                <button class="qty-btn" onclick="removeFromCart('${id}')">-</button>
-                <span>${item.qty}</span>
-                <button class="qty-btn" onclick="addToCart('${id}', '${item.name}')">+</button>
-            </div>
-        `;
-        cartItemsContainer.appendChild(cartItemDiv);
+        const cat = item.category || 'other';
+        if (!groupedCart[cat]) groupedCart[cat] = [];
+        groupedCart[cat].push({ id, ...item });
     });
+
+    for (const [cat, items] of Object.entries(groupedCart)) {
+        const header = document.createElement('div');
+        header.className = 'cart-category-header';
+        header.textContent = cat === 'cakepops' ? 'Cake Pops' : cat;
+        cartItemsContainer.appendChild(header);
+
+        items.forEach(item => {
+            const cartItemDiv = document.createElement('div');
+            cartItemDiv.className = 'cart-item';
+            cartItemDiv.innerHTML = `
+                <div class="cart-item-info">${item.name}</div>
+                <div class="cart-item-controls">
+                    <button class="qty-btn" onclick="removeFromCart('${item.id}')">-</button>
+                    <span>${item.qty}</span>
+                    <button class="qty-btn" onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', '${item.category}')">+</button>
+                </div>
+            `;
+            cartItemsContainer.appendChild(cartItemDiv);
+        });
+    }
 
     if (cartCountElem) cartCountElem.textContent = totalItems + ' items';
 }
@@ -254,11 +277,23 @@ function updateCartUI() {
 function generateOrderText() {
     let orderText = "\u{1F338} *NEW ORDER FOR ALI BUCKS!* \u{1F338}\n\n";
 
+    const groupedCart = {};
     Object.values(cart).forEach(item => {
-        orderText += `\u{1F449} ${item.qty}x ${item.name}\n`;
+        const cat = item.category || 'other';
+        if (!groupedCart[cat]) groupedCart[cat] = [];
+        groupedCart[cat].push(item);
     });
 
-    orderText += "\n\u{2728} _Can't wait for my yummy treats!_ \u{2728}";
+    for (const [cat, items] of Object.entries(groupedCart)) {
+        const catName = cat === 'cakepops' ? 'Cake Pops' : cat.charAt(0).toUpperCase() + cat.slice(1);
+        orderText += `*${catName}*\n`;
+        items.forEach(item => {
+            orderText += `\u{1F449} ${item.qty}x ${item.name}\n`;
+        });
+        orderText += '\n';
+    }
+
+    orderText += "\u{2728} _Can't wait for my yummy treats!_ \u{2728}";
     return orderText;
 }
 
@@ -416,15 +451,23 @@ submitPasswordBtn.addEventListener('click', () => {
     }
 });
 
+function titleCase(str) {
+    return str.toLowerCase().split(' ').map(word => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+}
+
 addItemBtn.addEventListener('click', () => {
     const category = document.getElementById('new-item-category').value;
-    const name = document.getElementById('new-item-name').value.trim();
+    let name = document.getElementById('new-item-name').value.trim();
     const icon = document.getElementById('new-item-icon').value.trim();
 
     if (!name || !icon) {
         adminMessage.innerText = 'Please provide both name and icon.';
         return;
     }
+
+    name = titleCase(name);
 
     const newId = 'item_' + Date.now();
     const newItem = {
